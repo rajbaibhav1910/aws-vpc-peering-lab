@@ -1,0 +1,25 @@
+# EWB VPC Peering - resource inventory
+# student : Baibhav Raj   batch: ____________
+# region  : ap-south-1 (Mumbai)   account: 597595166970
+# built   : 2026-10-17
+
+RESOURCE           ID                       DETAIL
+ewb-bastion        i-0f6a52081a6f8113b      10.10.1.10 + public
+ewb-app-a          i-05aa30d91ddf22920      10.10.2.10, no public IP
+ewb-app-b          i-03d1512b1a3659ff1      10.20.1.10, no public IP
+ewb-a-b-peer       pcx-043967053372c4309    active, A(requester)->B(accepter)
+ewb-vpc-a          vpc-06df4636df68c167f    10.10.0.0/16
+ewb-vpc-b          vpc-0d483d2bd26c30745    10.20.0.0/16
+ewb-a-public       subnet-0f40affc406626319 10.10.1.0/24 (public)
+ewb-a-private      subnet-03b5a67650f8c48c7 10.10.2.0/24 (private)
+ewb-b-private      subnet-07c5f4a60deac60e1 10.20.1.0/24 (private)
+ewb-igw-a          igw-057b7c2e3f47120ab    attached to VPC A
+ewb-rt-a-public    rtb-02690d674bd52e807    0.0.0.0/0->igw, 10.20/16->pcx
+ewb-rt-a-private   rtb-03701f904a1bb801e    10.20.0.0/16->pcx
+ewb-rt-b-private   rtb-0b1d136734b970656    10.10.0.0/16->pcx (return)
+ewb-sg-bastion     sg-0cc45566a5466b21c     tcp22 from MY_IP/32
+ewb-sg-app-a       sg-0c05847d87a41ccf8     tcp22+icmp8/0
+ewb-sg-app-b       sg-07ba1d7b79b22d488     tcp22+icmp8/0
+
+# AMI: ami-0c25f859a8b518798 (al2023-ami-2023.12.20261016.0-kernel-6.1-x86_64), type t3.micro
+# key pair: ewb-lab (imported public key; private key never left the laptop)

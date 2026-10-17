@@ -1,0 +1,21 @@
+# route tables after peering  2026-10-17T09:09:40Z
+# peering: pcx-043967053372c4309
+
+### ewb-rt-a-public = rtb-02690d674bd52e807
+  subnets: subnet-0f40affc406626319
+  DESTINATION       TARGET                   ORIGIN       STATE
+  10.10.0.0/16      local                    CreateRouteTable active
+  10.20.0.0/16      pcx-043967053372c4309    CreateRoute  active
+  0.0.0.0/0         igw-057b7c2e3f47120ab    CreateRoute  active
+
+### ewb-rt-a-private = rtb-03701f904a1bb801e
+  subnets: subnet-03b5a67650f8c48c7
+  DESTINATION       TARGET                   ORIGIN       STATE
+  10.10.0.0/16      local                    CreateRouteTable active
+  10.20.0.0/16      pcx-043967053372c4309    CreateRoute  active
+
+### ewb-rt-b-private = rtb-0b1d136734b970656
+  subnets: subnet-07c5f4a60deac60e1
+  DESTINATION       TARGET                   ORIGIN       STATE
+  10.10.0.0/16      pcx-043967053372c4309    CreateRoute  active
+  10.20.0.0/16      local                    CreateRouteTable active

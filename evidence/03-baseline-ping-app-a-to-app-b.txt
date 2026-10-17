@@ -1,0 +1,18 @@
+# EWB VPC Peering evidence
+# test      : 03-baseline-ping-app-a-to-app-b
+# run at    : 2026-10-17T09:08:34Z
+# from      : RAJBAIBHAV
+# command   : ssh 10.10.2.10  ping -c 4 10.20.1.10
+
+** WARNING: connection is not using a post-quantum key exchange algorithm.
+** This session may be vulnerable to "store now, decrypt later" attacks.
+** The server may need to be upgraded. See https://openssh.com/pq.html
+** WARNING: connection is not using a post-quantum key exchange algorithm.
+** This session may be vulnerable to "store now, decrypt later" attacks.
+** The server may need to be upgraded. See https://openssh.com/pq.html
+PING 10.20.1.10 (10.20.1.10) 56(84) bytes of data.
+
+--- 10.20.1.10 ping statistics ---
+4 packets transmitted, 0 received, 100% packet loss, time 3089ms
+
+[ssh exit code: 1]

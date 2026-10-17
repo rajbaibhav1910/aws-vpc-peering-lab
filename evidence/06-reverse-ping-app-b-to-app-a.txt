@@ -1,0 +1,22 @@
+# EWB VPC Peering evidence
+# test      : 06-reverse-ping-app-b-to-app-a
+# run at    : 2026-10-17T09:16:42Z
+# from      : RAJBAIBHAV
+# command   : ssh 10.20.1.10  ping -c 4 10.10.2.10
+
+** WARNING: connection is not using a post-quantum key exchange algorithm.
+** This session may be vulnerable to "store now, decrypt later" attacks.
+** The server may need to be upgraded. See https://openssh.com/pq.html
+** WARNING: connection is not using a post-quantum key exchange algorithm.
+** This session may be vulnerable to "store now, decrypt later" attacks.
+** The server may need to be upgraded. See https://openssh.com/pq.html
+PING 10.10.2.10 (10.10.2.10) 56(84) bytes of data.
+64 bytes from 10.10.2.10: icmp_seq=1 ttl=127 time=0.166 ms
+64 bytes from 10.10.2.10: icmp_seq=2 ttl=127 time=0.166 ms
+64 bytes from 10.10.2.10: icmp_seq=3 ttl=127 time=0.178 ms
+64 bytes from 10.10.2.10: icmp_seq=4 ttl=127 time=0.173 ms
+
+--- 10.10.2.10 ping statistics ---
+4 packets transmitted, 4 received, 0% packet loss, time 3128ms
+rtt min/avg/max/mdev = 0.166/0.170/0.178/0.005 ms
+[ssh exit code: 0]

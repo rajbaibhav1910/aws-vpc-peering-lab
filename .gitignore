@@ -1,0 +1,6 @@
+secrets/
+state.env
+*.pem
+*.pub
+known_hosts
+*.tmp
