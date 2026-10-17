@@ -1,20 +1,20 @@
-# test 05 - public IP check  2026-10-17T09:16:55Z
-  ewb-app-b      i-03d1512b1a3659ff1    private=10.20.1.10    public=(none)  running
-  ewb-bastion    i-0f6a52081a6f8113b    private=10.10.1.10    public=13.206.123.132  running
-  ewb-app-a      i-05aa30d91ddf22920    private=10.10.2.10    public=(none)  running
+# test 05 - public IP check  2026-10-17T12:18:21Z
+  ewb-app-a      i-08cd773d457488487    private=10.10.2.10    public=(none)  running
+  ewb-bastion    i-0f9bbae63560aaff9    private=10.10.1.10    public=13.126.70.86  running
+  ewb-app-b      i-097b484f23a762579    private=10.20.1.10    public=(none)  running
 
 # security group inbound rules
 
-### ewb-sg-bastion = sg-0cc45566a5466b21c (inbound only)
+### ewb-sg-bastion = sg-0a6467b762464b32f (inbound only)
   PORT         PROTOCOL     SOURCE
-  22           tcp          106.221.136.153/32
+  22           tcp          47.15.154.141/32
 
-### ewb-sg-app-a = sg-0c05847d87a41ccf8 (inbound only)
+### ewb-sg-app-a = sg-0b9037ae2a5b95caa (inbound only)
   PORT         PROTOCOL     SOURCE
   22           tcp          10.10.1.10/32
   type 8/code 0 icmp         10.20.1.10/32
 
-### ewb-sg-app-b = sg-07ba1d7b79b22d488 (inbound only)
+### ewb-sg-app-b = sg-00fa26a69eb0b9db5 (inbound only)
   PORT         PROTOCOL     SOURCE
   22           tcp          10.10.1.10/32
   type 8/code 0 icmp         10.10.2.10/32

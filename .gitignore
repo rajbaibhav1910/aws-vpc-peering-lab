@@ -1,5 +1,6 @@
 secrets/
 state.env
+state.env.backup
 *.pem
 *.pub
 known_hosts

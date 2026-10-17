@@ -108,13 +108,15 @@ ensure_rt() { # ensure_rt NAME VPC_ID
 
 ensure_igw() { # ensure_igw NAME VPC_ID
   local id; id=$(aws ec2 describe-internet-gateways --region "$REGION" --filters "Name=tag:Name,Values=$1" \
-    --query 'InternetGateways[0].InternetGatewayId' --output text)
+    --query 'InternetGateways[0].InternetGatewayId' --output text 2>/dev/null || echo None)
   if [ "$id" = "None" ] || [ -z "$id" ]; then
     id=$(aws ec2 create-internet-gateway --region "$REGION" --query 'InternetGateway.InternetGatewayId' --output text)
     tag_all "$id" "$1"
   fi
-  if [ -z "$(aws ec2 describe-internet-gateways --region "$REGION" --internet-gateway-ids "$id" \
-      --filters "Name=attachment.vpc-id,Values=$2" --query 'InternetGateways[0].InternetGatewayId' --output text)" ]; then
+  local attached
+  attached=$(aws ec2 describe-internet-gateways --region "$REGION" --internet-gateway-ids "$id" \
+      --filters "Name=attachment.vpc-id,Values=$2" --query 'InternetGateways[0].InternetGatewayId' --output text 2>/dev/null || echo None)
+  if [ "$attached" = "None" ] || [ -z "$attached" ]; then
     aws ec2 attach-internet-gateway --region "$REGION" --internet-gateway-id "$id" --vpc-id "$2"
   fi
   printf '%s' "$id"
@@ -324,6 +326,18 @@ cmd_instances() {
 SSH_BASE=(-o BatchMode=yes -o ConnectTimeout=25 -o StrictHostKeyChecking=accept-new
   -o "UserKnownHostsFile=$SECRETS/known_hosts" -i "$PRIV_KEY" -o IdentitiesOnly=yes)
 
+forget_host_keys() { # a rebuild reuses the same private IPs, so keys from the old instances must go
+  local f="$SECRETS/known_hosts"
+  mkdir -p "$SECRETS"; touch "$f"
+  local bpub ip alt=""
+  bpub="$(lookup BASTION_PUBLIC)"
+  for ip in "$BASTION_IP" "$APPA_IP" "$APPB_IP" "$bpub"; do
+    if [ -n "$ip" ]; then alt="$alt${alt:+|}$ip"; fi
+  done
+  grep -v -E "^($alt)([ ,]|$)" "$f" > "$f.tmp" || true
+  mv "$f.tmp" "$f"
+}
+
 proxy_for_bastion() {
   echo "ssh -o BatchMode=yes -o ConnectTimeout=25 -o StrictHostKeyChecking=accept-new -o \"UserKnownHostsFile=$SECRETS/known_hosts\" -i \"$PRIV_KEY\" -o IdentitiesOnly=yes -W %h:%p $SSH_USER@$(need BASTION_PUBLIC instances)"
 }
@@ -351,6 +365,9 @@ run_local() { # run_local LABEL HOST_IP jump? CMD...
     "$tmp" >> "$outf" || true
   rm -f "$tmp"
   printf '\n[ssh exit code: %s]\n' "$rc" >> "$outf"
+  if grep -q "Host key verification failed" "$outf"; then
+    die "ssh to $host aborted on a stale host key - delete secrets/known_hosts and re-run"
+  fi
   cat "$outf"
   echo "--> saved to evidence/$label.txt"
 }
@@ -358,7 +375,7 @@ run_local() { # run_local LABEL HOST_IP jump? CMD...
 # ---------------------------------------------------------------- baseline ----
 cmd_baseline() {
   local bpub; bpub="$(need BASTION_PUBLIC instances)"
-  mkdir -p "$SECRETS"; touch "$SECRETS/known_hosts"
+  forget_host_keys
   log "Test: SSH laptop -> bastion (VPC A local route, no peering needed)"
   run_local 01-ssh-bastion "$bpub" no 'hostname; hostname -I; uptime'
   log "Test: SSH laptop -> App-A through the bastion"
@@ -375,6 +392,14 @@ cmd_peering() {
   rt_apriv="$(need RT_A_PRIVATE network)"; rt_bpriv="$(need RT_B_PRIVATE network)"; rt_apub="$(need RT_A_PUBLIC network)"
 
   pcx="$(lookup PCX)"
+  if [ -n "$pcx" ]; then
+    local pcode
+    pcode="$(aws ec2 describe-vpc-peering-connections --region "$REGION" --vpc-peering-connection-ids "$pcx" \
+      --query 'VpcPeeringConnections[0].Status.Code' --output text 2>/dev/null || echo None)"
+    if [ "$pcode" != "active" ] && [ "$pcode" != "pending-acceptance" ]; then
+      pcx=""
+    fi
+  fi
   if [ -z "$pcx" ]; then
     acct="$(aws sts get-caller-identity --query Account --output text)"
     log "requesting ewb-a-b-peer (requester VPC A -> accepter VPC B)"
@@ -385,7 +410,7 @@ cmd_peering() {
     aws ec2 accept-vpc-peering-connection --region "$REGION" --vpc-peering-connection-id "$pcx" > /dev/null
     remember PCX "$pcx"
   else
-    log "peering $pcx already recorded"
+    log "peering $pcx already active"
   fi
 
   state=pending
@@ -417,6 +442,7 @@ cmd_peering() {
 # ------------------------------------------------------------------ verify ----
 cmd_verify() {
   local bpub; bpub="$(need BASTION_PUBLIC instances)"
+  forget_host_keys
   log "Test 02 forward: App-A -> App-B, 4 replies expected"
   run_local 05-forward-ping-app-a-to-app-b "$APPA_IP" jump "ping -c 4 $APPB_IP"
   log "Test 03 reverse: App-B -> App-A, 4 replies expected"

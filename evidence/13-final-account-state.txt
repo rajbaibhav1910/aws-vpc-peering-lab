@@ -1,0 +1,26 @@
+# EWB VPC Peering - final account state after the second teardown
+# run at  : 2026-10-17T12:58:09Z  (18:28 IST)
+# command : read-only describe calls, filtered on Project=EWB-VPC-Peering
+
+## every lab-tagged resource must be empty
+  vpcs                 0
+  subnets              0
+  route-tables         0
+  security-groups      0
+  internet-gateways    0
+
+## peering connections still listed by AWS (status must be deleted)
+--------------------------------------
+|    DescribeVpcPeeringConnections   |
++------------------------+-----------+
+|  pcx-0132d27205827aad2 |  deleted  |
++------------------------+-----------+
+
+## instances carrying the lab tag, any state (AWS keeps terminated rows for about an hour)
+ewb-app-a	terminated
+ewb-bastion	terminated
+ewb-app-b	terminated
+
+## scope proof - VPCs left in the account (production and default only)
+vpc-065f1b55a9c404785	10.0.0.0/16	smartgram-prod-vpc
+vpc-058e02483e7d12187	172.31.0.0/16	None

@@ -1,10 +1,32 @@
 # EWB VPC Peering - resource inventory
 # student : Baibhav Raj   batch: ____________
 # region  : ap-south-1 (Mumbai)   account: 597595166970
-# built   : 2026-10-17
+# built   : 2026-10-17, twice - same addressing both times
+
+Build 2 - the console screenshots and tests 02-05 (built 17:44 IST, torn down after 18:12 IST)
 
 RESOURCE           ID                       DETAIL
-ewb-bastion        i-0f6a52081a6f8113b      10.10.1.10 + public
+ewb-bastion        i-0f9bbae63560aaff9      10.10.1.10 + public 13.126.70.86
+ewb-app-a          i-08cd773d457488487      10.10.2.10, no public IP
+ewb-app-b          i-097b484f23a762579      10.20.1.10, no public IP
+ewb-a-b-peer       pcx-0132d27205827aad2    active, A(requester)->B(accepter)
+ewb-vpc-a          vpc-0843b8bd344059014    10.10.0.0/16
+ewb-vpc-b          vpc-097437c5c5b04cb2a    10.20.0.0/16
+ewb-a-public       subnet-0de70c3c480ad047c 10.10.1.0/24 (public)
+ewb-a-private      subnet-07f7ab785fb0c31da 10.10.2.0/24 (private)
+ewb-b-private      subnet-07407c3c1c2d1763f 10.20.1.0/24 (private)
+ewb-igw-a          igw-0169b40008fdaae98    attached to VPC A
+ewb-rt-a-public    rtb-0e0a730af7cfbfc2a    0.0.0.0/0->igw, 10.20/16->pcx
+ewb-rt-a-private   rtb-0bd505c2786b703ab    10.20.0.0/16->pcx
+ewb-rt-b-private   rtb-0e1cc69e534cb466f    10.10.0.0/16->pcx (return)
+ewb-sg-bastion     sg-0a6467b762464b32f     tcp22 from MY_IP/32
+ewb-sg-app-a       sg-0b9037ae2a5b95caa     tcp22+icmp type 8/code 0
+ewb-sg-app-b       sg-00fa26a69eb0b9db5     tcp22+icmp type 8/code 0
+
+Build 1 - where the ICMP bug was found (built 14:44 IST, torn down 15:43 IST)
+
+RESOURCE           ID                       DETAIL
+ewb-bastion        i-0f6a52081a6f8113b      10.10.1.10 + public 13.206.123.132
 ewb-app-a          i-05aa30d91ddf22920      10.10.2.10, no public IP
 ewb-app-b          i-03d1512b1a3659ff1      10.20.1.10, no public IP
 ewb-a-b-peer       pcx-043967053372c4309    active, A(requester)->B(accepter)
@@ -18,8 +40,9 @@ ewb-rt-a-public    rtb-02690d674bd52e807    0.0.0.0/0->igw, 10.20/16->pcx
 ewb-rt-a-private   rtb-03701f904a1bb801e    10.20.0.0/16->pcx
 ewb-rt-b-private   rtb-0b1d136734b970656    10.10.0.0/16->pcx (return)
 ewb-sg-bastion     sg-0cc45566a5466b21c     tcp22 from MY_IP/32
-ewb-sg-app-a       sg-0c05847d87a41ccf8     tcp22+icmp8/0
-ewb-sg-app-b       sg-07ba1d7b79b22d488     tcp22+icmp8/0
+ewb-sg-app-a       sg-0c05847d87a41ccf8     tcp22+icmp (first attempt: type 8/code 8)
+ewb-sg-app-b       sg-07ba1d7b79b22d488     tcp22+icmp (first attempt: type 8/code 8)
 
-# AMI: ami-0c25f859a8b518798 (al2023-ami-2023.12.20261016.0-kernel-6.1-x86_64), type t3.micro
+# AMI both builds: ami-0c25f859a8b518798 (al2023-ami-2023.12.20261016.0-kernel-6.1-x86_64), type t3.micro
 # key pair: ewb-lab (imported public key; private key never left the laptop)
+# every resource carries Project=EWB-VPC-Peering, Lab=VPC-Peering, Student=Baibhav Raj

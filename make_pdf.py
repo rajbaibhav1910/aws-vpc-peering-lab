@@ -9,6 +9,7 @@ with what the lab actually printed. No key material is read or written.
 """
 
 import argparse
+import struct
 import sys
 from pathlib import Path
 
@@ -17,6 +18,7 @@ from fpdf.enums import XPos, YPos
 
 ROOT = Path(__file__).resolve().parent
 EVIDENCE = ROOT / "evidence"
+SCREENSHOTS = ROOT / "screenshots"
 FONTS = Path("C:/Windows/Fonts")
 
 STUDENT = "Baibhav Raj"
@@ -29,7 +31,8 @@ DATE = "17 October 2026"
 TESTS = [
     ("Test 01 - Baseline failure", "03-baseline-ping-app-a-to-app-b.txt",
      "Host: ewb-app-a. Test: ping -c 4 10.20.1.10 before any peering exists. "
-     "Result: 4 transmitted, 0 received, 100% loss. Expected, and the reference point for everything after."),
+     "Result: 4 transmitted, 0 received, 100% loss. Expected, and the reference point for everything "
+     "after. Transcript from the first build - the second attempt aborted on a stale host key, see section 7."),
     ("Test 02 - Forward path", "05-forward-ping-app-a-to-app-b.txt",
      "Host: ewb-app-a, after the peer routes. Result: 4 received, 0% loss. "
      "The request matched 10.20.0.0/16 in ewb-rt-a-private and crossed the peering connection."),
@@ -44,7 +47,8 @@ TESTS = [
      "and every app rule is a /32 host source."),
     ("Test 06a - Controlled failure", "09-controlled-failure-ping.txt",
      "Deleted only the inbound Echo request rule (type 8, code 0) from 10.10.2.10/32 on ewb-sg-app-b; "
-     "the SSH rule stayed. Result: back to 100% loss while the peering connection still read Active."),
+     "the SSH rule stayed. Result: back to 100% loss while the peering connection still read Active. "
+     "Transcript from the first build; same addresses, same rule, same outcome on the second."),
     ("Test 06b - Recovery", "10-recovered-ping.txt",
      "Restored that one identical rule. Result: 4 received again. This proves the security group, "
      "not routing, was the variable in step 06a."),
@@ -56,6 +60,68 @@ def read(name: str) -> str:
     if not path.exists():
         sys.exit(f"missing evidence file: {path}")
     return path.read_text(encoding="utf-8", errors="replace").rstrip()
+
+
+def png_size(path: Path):
+    with open(path, "rb") as fh:
+        head = fh.read(24)
+    return struct.unpack(">II", head[16:24])
+
+
+# Console screenshots taken while the second build was live (Checkpoint 01-04).
+SHOTS = [
+    ("cp01-vpc-a-resource-map.png",
+     "Checkpoint 01 - VPC A resource map. Two subnets, three route tables, ewb-igw-a as the only "
+     "network connection."),
+    ("cp01-vpc-b-resource-map.png",
+     "Checkpoint 01 - VPC B resource map. One private subnet, zero network connections, so no route "
+     "out to the internet exists anywhere in this VPC."),
+    ("cp01-subnet-ewb-a-public.png",
+     "Checkpoint 01 - subnet ewb-a-public (10.10.1.0/24) is associated with the custom ewb-rt-a-public, "
+     "not the main table."),
+    ("cp01-subnet-ewb-a-private.png",
+     "Checkpoint 01 - subnet ewb-a-private (10.10.2.0/24) is associated with ewb-rt-a-private "
+     "(rtb-0bd505c2786b703ab)."),
+    ("cp01-subnet-ewb-b-private.png",
+     "Checkpoint 01 - subnet ewb-b-private (10.20.1.0/24) is associated with ewb-rt-b-private "
+     "(rtb-0e1cc69e534cb466f)."),
+    ("cp01-igw-attached-to-vpc-a.png",
+     "Checkpoint 01 - igw-0169b40008fdaae98 is Attached to VPC A only, and carries the lab tags."),
+    ("cp02-instance-ewb-app-a.png",
+     "Checkpoint 02 - ewb-app-a, i-08cd773d457488487, private 10.10.2.10, Public IPv4 address empty, "
+     "IMDSv2 required."),
+    ("cp02-instance-ewb-app-b.png",
+     "Checkpoint 02 - ewb-app-b, i-097b484f23a762579, private 10.20.1.10, Public IPv4 address empty. "
+     "The bastion's own summary and public IPv4 13.126.70.86 are in evidence/08-private-only-check.txt."),
+    ("cp03-peering-active.png",
+     "Checkpoint 03 - pcx-0132d27205827aad2 status Active, requester vpc-0843b8bd344059014 / ewb-vpc-a "
+     "(10.10.0.0/16), accepter vpc-097437c5c5b04cb2a / ewb-vpc-b (10.20.0.0/16), both in Mumbai."),
+    ("cp04-routes-ewb-rt-a-private.png",
+     "Checkpoint 04 - ewb-rt-a-private holds only the local route plus 10.20.0.0/16 to the peering "
+     "connection. No default route, which is what keeps App-A private."),
+    ("cp04-routes-ewb-rt-b-private.png",
+     "Checkpoint 04 - ewb-rt-b-private is the return path: 10.10.0.0/16 to the same peering connection. "
+     "ewb-rt-a-public (0.0.0.0/0 to the IGW plus 10.20.0.0/16 to the pcx) is dumped in evidence/04."),
+]
+
+
+def screenshot(pdf, fname, caption):
+    path = SCREENSHOTS / fname
+    if not path.exists():
+        sys.exit(f"missing screenshot: {path}")
+    pw, ph = png_size(path)
+    width = pdf.epw
+    height = width * ph / pw
+    if pdf.get_y() + height + 14 > pdf.page_break_trigger:
+        pdf.add_page()
+    pdf.set_font("body", "B", 8.5)
+    pdf.set_text_color(40)
+    pdf.multi_cell(0, 4.2, caption, new_x=XPos.LMARGIN, new_y=YPos.NEXT)
+    pdf.set_text_color(0)
+    pdf.ln(1.5)
+    pdf.image(str(path), w=width)
+    pdf.ln(5)
+
 
 
 class Report(FPDF):
@@ -206,14 +272,16 @@ def cover(pdf, batch):
         ("Region", REGION),
         ("Completed", DATE),
         ("Result", "6 of 6 workbook tests passed, teardown verified clean"),
+        ("Evidence", "13 CLI transcripts and 11 console screenshots, all in the public repo"),
     ]
     pdf.table(["Field", "Value"], rows, [34, 140], size=10)
     pdf.body(
         "I built the whole environment through the AWS CLI instead of clicking, ran every test the "
         "workbook asks for, and kept the raw terminal output behind each claim. The lab starts with a "
         "ping that fails on purpose, ends with a security group rule removed and restored to show "
-        "which control actually matters, and in the middle it hit a real ICMP type/code bug that took "
-        "packet captures on both sides to find."
+        "which control actually matters, and along the way it hit two real bugs: an ICMP type/code "
+        "mistake that took packet captures on both sides to find, and a stale SSH host key that only "
+        "appeared when the lab was rebuilt."
     )
 
 
@@ -289,10 +357,20 @@ def body_pages(pdf):
         pdf.body(note, size=9)
 
     pdf.add_page()
-    pdf.h1("5. Forward path and return path")
+    pdf.h1("5. Console screenshots (Checkpoint 01-04)")
+    pdf.body(
+        "Captured from the console while the environment was live, in workbook order. The second build "
+        "is shown here, so the IDs match evidence/00-inventory.txt; the transcripts in section 4 come "
+        "from the same addressing on both builds."
+    )
+    for fname, cap in SHOTS:
+        screenshot(pdf, fname, cap)
+
+    pdf.add_page()
+    pdf.h1("6. Forward path and return path")
     pdf.bullets([
         "Forward: App-A 10.10.2.10 sends to 10.20.1.10. Its subnet table matches 10.20.0.0/16, target "
-        "pcx-043967053372c4309. The packet crosses into VPC B and arrives at App-B's ENI, where the "
+        "pcx-0132d27205827aad2. The packet crosses into VPC B and arrives at App-B's ENI, where the "
         "inbound Echo request rule lets it in.",
         "Return: App-B replies to 10.10.2.10. That is a fresh lookup in ewb-rt-b-private, which needs its "
         "own route 10.10.0.0/16 back over the same peering connection. Security groups are stateful, so "
@@ -301,7 +379,7 @@ def body_pages(pdf):
         "route is the single easiest mistake to make in this lab.",
     ])
 
-    pdf.h1("6. The bug that taught me the most")
+    pdf.h1("7. The bugs that taught me the most")
     pdf.body(
         "Peering was Active, all three route tables were correct, and SSH from the bastion to App-B "
         "worked - yet every ping failed in both directions. So I captured traffic on each side: tcpdump "
@@ -316,8 +394,21 @@ def body_pages(pdf):
         "Active peering connection proves nothing about traffic being permitted, and one packet capture "
         "per side tells you which side is lying where a screenshot would not."
     )
+    pdf.h2("The second one: stale host keys on the rebuild")
+    pdf.body(
+        "Rebuilding the same lab a second time broke two tests before peering was even involved. The new "
+        "instances came back with the same private IPs (10.10.2.10, 10.20.1.10) but fresh SSH host keys, "
+        "so StrictHostKeyChecking refused the connection and the run died with exit 255. The transcript "
+        "is kept as evidence/12-rebuild-hostkey-abort.txt because it is a real result, just not a lab "
+        "result. The script now clears those IPs from secrets/known_hosts before the SSH phases, and "
+        "run_local aborts the phase instead of quietly saving a host-key error as if it were a test."
+    )
+    pdf.body(
+        "The wider point: reusing addresses across builds is fine for the VPC design and dangerous for "
+        "SSH trust. A rebuild is a new host, and it should be treated like one."
+    )
 
-    pdf.h1("7. Viva answers")
+    pdf.h1("8. Viva answers")
     answers = [
         ("Why is the return route needed?",
          "A ping is two trips. The reply to 10.10.2.10 is a new route lookup inside VPC B, which only "
@@ -346,15 +437,20 @@ def body_pages(pdf):
     )
 
     pdf.add_page()
-    pdf.h1("8. Cleanup evidence")
+    pdf.h1("9. Cleanup evidence")
     pdf.body(
         "Teardown ran from the same script that built the lab, so it deleted only the IDs it had "
         "recorded. That matters here: the account also runs a production stack, and nothing outside "
         "the lab tags was touched."
     )
     pdf.mono(read("11-cleanup.txt"), size=7.2)
+    pdf.body(
+        "That was the first teardown, at 15:43 IST. The lab was built again for the console screenshots "
+        "and torn down a second time; the check below ran after that, straight from the account."
+    )
+    pdf.mono(read("13-final-account-state.txt"), size=7.2)
 
-    pdf.h1("9. What I learned")
+    pdf.h1("10. What I learned")
     pdf.bullets([
         "Peering is only the link; route tables and security rules decide whether traffic may use it.",
         "Plan CIDRs before anything exists. 10.10.0.0/16 and 10.20.0.0/16 do not overlap, which is the "
@@ -364,11 +460,13 @@ def body_pages(pdf):
         "Test the negative case on purpose. The controlled failure taught me more than the passing ping.",
         "When a test fails and the console says healthy, capture packets at both ends instead of "
         "guessing which layer to blame.",
+        "A rebuild is a new set of hosts even when the IPs match. Reusing private addresses means "
+        "reusing SSH host keys that no longer belong to anything.",
         "Costs need an owner. t3.micro in three places plus one public IPv4 is cheap, but it is real "
         "money, so the script ends with teardown and a check that the account is clear.",
     ])
 
-    pdf.h1("10. Reproduce it")
+    pdf.h1("11. Reproduce it")
     pdf.body(
         "GitHub: github.com/rajbaibhav1910/aws-vpc-peering-lab - one script, phased so each checkpoint "
         "can be captured in order. ./build-lab.sh all builds through the tests, failtest runs the "

@@ -12,46 +12,51 @@ Name: Baibhav Raj · Batch: ____________ · Region: ap-south-1 · Completed: 17 
 | Controlled ICMP failure and recovery with explanation | `evidence/09`, `evidence/10`, README "The bug that taught me most" | 15 | ✅ |
 | Cleanup evidence + what I learned | `evidence/11-cleanup.txt`, notes below | 10 | ✅ |
 
-Console screenshots for Checkpoints 01–04 had to be taken **during** the run — the resources are gone
-now, so the CLI dumps in `evidence/` are what backs each checkpoint:
+Console screenshots for Checkpoints 01–04 were captured from the AWS Management Console during
+the second build (saved in `screenshots/` and embedded in `BaibhavRaj_EWB_VPC_Peering.pdf`), backed
+by the CLI output dumps in `evidence/`:
 
-1. Checkpoint 01 (subnet associations + public default route, private table local-only):
-   `evidence/04-route-tables-after-peering.txt`, read before the peering phase adds its routes.
-2. Checkpoint 02 (three instance IDs, private IPs, bastion public IPv4, App-A/App-B public field empty):
-   `evidence/08-private-only-check.txt`.
-3. Checkpoint 03 (`ewb-a-b-peer` with **Active** and both VPC IDs): `evidence/00-inventory.txt`.
+1. Checkpoint 01 (subnet associations, resource maps, public default route, private table local-only):
+   - Screenshots: `screenshots/cp01-vpc-a-resource-map.png`, `cp01-vpc-b-resource-map.png`,
+     `cp01-subnet-ewb-a-public.png`, `cp01-subnet-ewb-a-private.png`, `cp01-subnet-ewb-b-private.png`,
+     `cp01-igw-attached-to-vpc-a.png`.
+   - CLI proof: `evidence/04-route-tables-after-peering.txt`.
+2. Checkpoint 02 (three instances, private IPs, bastion public IPv4, App-A/App-B public field empty):
+   - Screenshots: `screenshots/cp02-instance-ewb-app-a.png`, `cp02-instance-ewb-app-b.png`.
+   - CLI proof: `evidence/08-private-only-check.txt`.
+3. Checkpoint 03 (`ewb-a-b-peer` with **Active** status, requester VPC A, and accepter VPC B):
+   - Screenshot: `screenshots/cp03-peering-active.png`.
+   - CLI proof: `evidence/00-inventory.txt`.
 4. Checkpoint 04 (routes and associations for `ewb-rt-a-public`, `ewb-rt-a-private`, `ewb-rt-b-private`):
-   `evidence/04-route-tables-after-peering.txt`.
-
-If the instructor wants literal PNGs of the console, re-run `./build-lab.sh all` (about ₹7/hour) and
-shoot them before teardown.
+   - Screenshots: `screenshots/cp04-routes-ewb-rt-a-private.png`, `cp04-routes-ewb-rt-b-private.png`.
+   - CLI proof: `evidence/04-route-tables-after-peering.txt`.
 
 ## Forward path / return path in one line each
 
-* Forward: 10.10.2.10 → `ewb-rt-a-private` 10.20.0.0/16 → `pcx-043967053372c4309` → 10.20.1.10.
+* Forward: 10.10.2.10 → `ewb-rt-a-private` 10.20.0.0/16 → `pcx-0132d27205827aad2` → 10.20.1.10.
 * Return: 10.20.1.10 replies to 10.10.2.10 → `ewb-rt-b-private` 10.10.0.0/16 → the same pcx → 10.10.2.10.
+*(Build 1 used `pcx-043967053372c4309` with identical routing paths).*
 
 ## What I learned
 
-Peering is only the link; routes and security rules decide whether traffic may use it. I proved that
-twice — once with the controlled rule deletion, and once with a real bug where `--protocol icmp --port 8`
-created type 8 **code 8** while an Echo request needs code 0, so SSH crossed the peering connection
-while every ping was dropped. Reading the console as "Active" would have told me nothing; one `tcpdump`
-per side told me exactly where the packets died.
+1. **Routing and security groups govern the peering link**: Peering is only the pipe; routes and
+   security rules decide whether traffic may use it. I proved that with the controlled rule deletion,
+   and with a real bug where `--protocol icmp --port 8` created type 8 **code 8** while an Echo request
+   needs code 0. SSH crossed the peering connection while every ping died silently at the hypervisor.
+   Packet captures on both sides showed where the packets died.
+2. **Stale host keys on rebuild**: Rebuilding the lab reused the same private IP addresses (`10.10.2.10`,
+   `10.20.1.10`) on brand-new EC2 instances with new host keys. `ssh` aborted with host key verification
+   failure (captured in `evidence/12-rebuild-hostkey-abort.txt`). The fix was updating the script to
+   clear the lab hosts from `secrets/known_hosts` between runs.
 
 ## Cleanup
 
-Ran `./build-lab.sh teardown` on 17 October 2026 at 15:41 IST. It terminated the three instances,
-deleted `pcx-043967053372c4309` and the three peer routes, then the lab security groups, subnets,
-custom route tables, `ewb-igw-a` and both VPCs — only the IDs it had recorded in `state.env`.
+The lab was built twice to collect both CLI packet traces and console screenshots, and cleanly torn
+down both times using `./build-lab.sh teardown`:
+- **First teardown**: 17 October 2026 at 15:41 IST (`evidence/11-cleanup.txt`).
+- **Second teardown**: 17 October 2026 at 18:18 IST (`evidence/13-final-account-state.txt`).
 
-`evidence/11-cleanup.txt` holds the proof: every lab resource filtered by `Project=EWB-VPC-Peering`
-returns empty, the peering connection reads `deleted`, all three instances read `terminated`, and the
-pre-existing `smartgram-prod` VPC is untouched. The bastion's `13.206.123.132` was an auto-assigned
-public IPv4, so it went with the instance; no Elastic IP and no EBS volume were left behind.
+Every resource filtered by `Project=EWB-VPC-Peering` returns empty, the peering connection reads
+`deleted`, instances read `terminated`, and the pre-existing `smartgram-prod` VPC was untouched.
+The key pair `ewb-lab` is retained for future runs. No private keys, passwords, or credentials are committed.
 
-Deliberately kept: the `ewb-lab` key pair (costs nothing, and dropping it would break a re-run until
-`state.env` is cleared). Remove it with
-`aws ec2 delete-key-pair --region ap-south-1 --key-name ewb-lab`. The Billing console still needs a
-look the next day, since usage reporting lags.
-No report contains a private key, password or token.

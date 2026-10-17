@@ -1,16 +1,17 @@
 # EWB VPC Peering evidence
 # test      : 05-forward-ping-app-a-to-app-b
-# run at    : 2026-10-17T09:16:36Z
+# run at    : 2026-10-17T12:18:04Z
 # from      : RAJBAIBHAV
 # command   : ssh 10.10.2.10  ping -c 4 10.20.1.10
 
 PING 10.20.1.10 (10.20.1.10) 56(84) bytes of data.
-64 bytes from 10.20.1.10: icmp_seq=1 ttl=127 time=0.324 ms
-64 bytes from 10.20.1.10: icmp_seq=2 ttl=127 time=0.314 ms
-64 bytes from 10.20.1.10: icmp_seq=3 ttl=127 time=0.335 ms
-64 bytes from 10.20.1.10: icmp_seq=4 ttl=127 time=0.332 ms
+64 bytes from 10.20.1.10: icmp_seq=1 ttl=127 time=0.502 ms
+64 bytes from 10.20.1.10: icmp_seq=2 ttl=127 time=0.214 ms
+64 bytes from 10.20.1.10: icmp_seq=3 ttl=127 time=0.213 ms
+64 bytes from 10.20.1.10: icmp_seq=4 ttl=127 time=0.220 ms
 
 --- 10.20.1.10 ping statistics ---
-4 packets transmitted, 4 received, 0% packet loss, time 3149ms
-rtt min/avg/max/mdev = 0.314/0.326/0.335/0.008 ms
+4 packets transmitted, 4 received, 0% packet loss, time 3154ms
+rtt min/avg/max/mdev = 0.213/0.287/0.502/0.124 ms
+
 [ssh exit code: 0]

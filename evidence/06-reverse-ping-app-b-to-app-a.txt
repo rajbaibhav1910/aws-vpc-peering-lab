@@ -1,16 +1,17 @@
 # EWB VPC Peering evidence
 # test      : 06-reverse-ping-app-b-to-app-a
-# run at    : 2026-10-17T09:16:42Z
+# run at    : 2026-10-17T12:18:11Z
 # from      : RAJBAIBHAV
 # command   : ssh 10.20.1.10  ping -c 4 10.10.2.10
 
 PING 10.10.2.10 (10.10.2.10) 56(84) bytes of data.
-64 bytes from 10.10.2.10: icmp_seq=1 ttl=127 time=0.166 ms
-64 bytes from 10.10.2.10: icmp_seq=2 ttl=127 time=0.166 ms
-64 bytes from 10.10.2.10: icmp_seq=3 ttl=127 time=0.178 ms
-64 bytes from 10.10.2.10: icmp_seq=4 ttl=127 time=0.173 ms
+64 bytes from 10.10.2.10: icmp_seq=1 ttl=127 time=0.281 ms
+64 bytes from 10.10.2.10: icmp_seq=2 ttl=127 time=0.226 ms
+64 bytes from 10.10.2.10: icmp_seq=3 ttl=127 time=0.223 ms
+64 bytes from 10.10.2.10: icmp_seq=4 ttl=127 time=0.295 ms
 
 --- 10.10.2.10 ping statistics ---
-4 packets transmitted, 4 received, 0% packet loss, time 3128ms
-rtt min/avg/max/mdev = 0.166/0.170/0.178/0.005 ms
+4 packets transmitted, 4 received, 0% packet loss, time 3126ms
+rtt min/avg/max/mdev = 0.223/0.256/0.295/0.032 ms
+
 [ssh exit code: 0]

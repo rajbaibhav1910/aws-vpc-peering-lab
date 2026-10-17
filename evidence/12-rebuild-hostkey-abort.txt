@@ -1,0 +1,30 @@
+# EWB VPC Peering evidence - a finding, not a test result
+# when     : 2026-10-17 17:45 IST, second build of the same lab
+# command   : ./build-lab.sh baseline
+# what broke: the rebuild reused private IPs 10.10.2.10 / 10.20.1.10, so the
+#             known_hosts entries from the first build's instances were still
+#             there and StrictHostKeyChecking refused the connection.
+# fix       : forget_host_keys() now clears those IPs before the SSH tests run,
+#             and run_local() aborts the phase instead of saving this as a result.
+
+# EWB VPC Peering evidence
+# test      : 02-ssh-app-a-via-bastion
+# run at    : 2026-10-17T12:15:17Z
+# from      : RAJBAIBHAV
+# command   : ssh 10.10.2.10  hostname; hostname -I
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+@    WARNING: REMOTE HOST IDENTIFICATION HAS CHANGED!     @
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+IT IS POSSIBLE THAT SOMEONE IS DOING SOMETHING NASTY!
+Someone could be eavesdropping on you right now (man-in-the-middle attack)!
+It is also possible that a host key has just been changed.
+The fingerprint for the ED25519 key sent by the remote host is
+SHA256:aPUndW7/0AAFbXlufYUESX910ogYUHfb2hwP6JONY+I.
+Please contact your system administrator.
+Add correct host key in /c/Users/baibh/Documents/Qoder/2026-10-17/c5674211/ewb-vpc-peering/secrets/known_hosts to get rid of this message.
+Offending ED25519 key in /c/Users/baibh/Documents/Qoder/2026-10-17/c5674211/ewb-vpc-peering/secrets/known_hosts:2
+Host key for 10.10.2.10 has changed and you have requested strict checking.
+Host key verification failed.
+
+[ssh exit code: 255]

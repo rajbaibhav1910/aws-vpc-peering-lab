@@ -84,11 +84,16 @@ routing and security groups as the variables.
 | # | Test | Where | Result | Evidence |
 |---|---|---|---|---|
 | 01 | Baseline, before peering | App-A: `ping -c 4 10.20.1.10` | **0 received, 100% loss** | [`03-baseline-ping-app-a-to-app-b.txt`](evidence/03-baseline-ping-app-a-to-app-b.txt) |
-| 02 | Forward path | App-A: `ping -c 4 10.20.1.10` | **4 received, 0% loss, avg 0.33 ms** | [`05-forward-ping-app-a-to-app-b.txt`](evidence/05-forward-ping-app-a-to-app-b.txt) |
+| 02 | Forward path | App-A: `ping -c 4 10.20.1.10` | **4 received, 0% loss, avg 0.29 ms** | [`05-forward-ping-app-a-to-app-b.txt`](evidence/05-forward-ping-app-a-to-app-b.txt) |
 | 03 | Reverse path | App-B: `ping -c 4 10.10.2.10` | **4 received, 0% loss** | [`06-reverse-ping-app-b-to-app-a.txt`](evidence/06-reverse-ping-app-b-to-app-a.txt) |
 | 04 | Private SSH | laptop: `ssh` App-B through bastion | **shell on `ip-10-20-1-10`** | [`07-ssh-app-b-via-bastion.txt`](evidence/07-ssh-app-b-via-bastion.txt) |
 | 05 | Isolation | EC2 instance details | **App-A and App-B both `public=(none)`** | [`08-private-only-check.txt`](evidence/08-private-only-check.txt) |
 | 06 | Controlled failure | delete one ICMP rule, then restore | **100% loss → 4 replies again** | [`09`](evidence/09-controlled-failure-ping.txt), [`10`](evidence/10-recovered-ping.txt) |
+
+Which build each transcript came from: tests 01 and 06 ran on the first build (14:38–14:48 IST), tests
+02–05 ran again on the second build (17:45–17:48 IST). Both builds used the same CIDRs and the same
+private IPs, and those transcripts carry no resource IDs, so they are directly comparable; the IDs that
+do differ are listed per build in [`evidence/00-inventory.txt`](evidence/00-inventory.txt).
 
 Forward path: App-A sends to 10.20.1.10 → its subnet table matches 10.20.0.0/16 → peering connection →
 App-B's ENI. Return path: App-B replies to 10.10.2.10 → `ewb-rt-b-private` matches 10.10.0.0/16 → back
@@ -108,6 +113,16 @@ code 0 — so the hypervisor dropped the packets before the guest ever saw them.
 Echo request* would have given me type 8 code 0 from the start. Two lessons: a peering route being
 present is not the same as traffic being permitted, and one packet capture on each side tells you
 which side is lying.
+
+## The bug that only appeared on the rebuild
+
+I built the lab a second time to take the console screenshots, and two tests died before peering was
+even involved. The new instances came back with the same private IPs but fresh SSH host keys, so
+`StrictHostKeyChecking` refused the connection and the phase exited 255. The raw error is kept in
+[`evidence/12-rebuild-hostkey-abort.txt`](evidence/12-rebuild-hostkey-abort.txt). `forget_host_keys()`
+now clears the lab's IPs from `secrets/known_hosts` before the SSH phases, and `run_local()` aborts on
+that error instead of quietly filing it as a test result. Reusing addresses is fine for a VPC design
+and dangerous for SSH trust: a rebuild is a new host, and it should be treated like one.
 
 ## How to run it yourself
 
@@ -152,10 +167,13 @@ Peering is also one-to-one and non-transitive: A–B plus A–C never gives B–
 
 ## Files
 
-| File | What it is |
+| File / Folder | What it is |
 |---|---|
 | `build-lab.sh` | the whole lab: build, test, break, clean up |
-| `evidence/` | raw terminal output and route/SG dumps, one file per test |
+| `evidence/` | raw terminal output, route/SG dumps, and host-key/teardown traces |
+| `screenshots/` | 11 AWS Console PNG screenshots covering Checkpoints 01–04 |
+| `make_pdf.py` | report generator that embeds evidence and console screenshots |
+| [`BaibhavRaj_EWB_VPC_Peering.pdf`](BaibhavRaj_EWB_VPC_Peering.pdf) | final 16-page submission report with all embedded screenshots |
 | `ssh_config.snippet` | the ProxyJump config, generated with real values |
 | `state.env` | local only (git-ignored): resource IDs for teardown |
 | `secrets/` | local only (git-ignored): private key, never committed |

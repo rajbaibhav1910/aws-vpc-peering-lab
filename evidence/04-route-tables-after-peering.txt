@@ -1,21 +1,21 @@
-# route tables after peering  2026-10-17T09:09:40Z
-# peering: pcx-043967053372c4309
+# route tables after peering  2026-10-17T12:16:17Z
+# peering: pcx-0132d27205827aad2
 
-### ewb-rt-a-public = rtb-02690d674bd52e807
-  subnets: subnet-0f40affc406626319
+### ewb-rt-a-public = rtb-0e0a730af7cfbfc2a
+  subnets: subnet-0de70c3c480ad047c
   DESTINATION       TARGET                   ORIGIN       STATE
   10.10.0.0/16      local                    CreateRouteTable active
-  10.20.0.0/16      pcx-043967053372c4309    CreateRoute  active
-  0.0.0.0/0         igw-057b7c2e3f47120ab    CreateRoute  active
+  10.20.0.0/16      pcx-0132d27205827aad2    CreateRoute  active
+  0.0.0.0/0         igw-0169b40008fdaae98    CreateRoute  active
 
-### ewb-rt-a-private = rtb-03701f904a1bb801e
-  subnets: subnet-03b5a67650f8c48c7
+### ewb-rt-a-private = rtb-0bd505c2786b703ab
+  subnets: subnet-07f7ab785fb0c31da
   DESTINATION       TARGET                   ORIGIN       STATE
   10.10.0.0/16      local                    CreateRouteTable active
-  10.20.0.0/16      pcx-043967053372c4309    CreateRoute  active
+  10.20.0.0/16      pcx-0132d27205827aad2    CreateRoute  active
 
-### ewb-rt-b-private = rtb-0b1d136734b970656
-  subnets: subnet-07c5f4a60deac60e1
+### ewb-rt-b-private = rtb-0e1cc69e534cb466f
+  subnets: subnet-07407c3c1c2d1763f
   DESTINATION       TARGET                   ORIGIN       STATE
-  10.10.0.0/16      pcx-043967053372c4309    CreateRoute  active
+  10.10.0.0/16      pcx-0132d27205827aad2    CreateRoute  active
   10.20.0.0/16      local                    CreateRouteTable active
