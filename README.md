@@ -1,11 +1,14 @@
-# AWS VPC Peering — private traffic between two VPCs
+# AWS VPC Peering: private traffic between two VPCs
 
-**Student:** Raj Baibhav · **Course:** EWB Cloud Labs, AWS Architect Associate · **Project 01**
-**Region:** ap-south-1 (Mumbai) · **Built:** 17 October 2026 · **Status:** all six tests passed, torn down the same day
+- Student: Raj Baibhav
+- Course: EWB Cloud Labs, AWS Architect Associate, Project 01
+- Region: ap-south-1 (Mumbai)
+- Built and torn down: 17 October 2026
+- Result: all six tests passed
 
 Two VPCs that know nothing about each other, then one peering connection that makes them talk over
-private IPs only. I built the whole thing from the AWS CLI, ran every test the workbook asks for,
-kept the raw terminal output, and broke it on purpose at the end to prove which rule actually matters.
+private IPs only. I built the whole thing with the AWS CLI, ran every test the workbook asks for,
+kept the terminal output, and broke it on purpose at the end to see which rule actually matters.
 
 ```
 Your laptop ──SSH 22──► ewb-bastion 10.10.1.10 ─┬─► ewb-app-a 10.10.2.10   (VPC A local route)
@@ -50,21 +53,21 @@ graph LR
 | `ewb-vpc-b` | VPC B | 10.20.0.0/16 |
 | `ewb-b-private` | VPC B | 10.20.1.0/24 |
 | `ewb-bastion` | `ewb-a-public` | 10.10.1.10 + a public IPv4 |
-| `ewb-app-a` | `ewb-a-private` | 10.10.2.10, **no** public IPv4 |
-| `ewb-app-b` | `ewb-b-private` | 10.20.1.10, **no** public IPv4 |
+| `ewb-app-a` | `ewb-a-private` | 10.10.2.10, no public IPv4 |
+| `ewb-app-b` | `ewb-b-private` | 10.20.1.10, no public IPv4 |
 
 10.10.0.0/16 and 10.20.0.0/16 do not overlap, so peering is even allowed. Real IDs for everything are
 in [`evidence/00-inventory.txt`](evidence/00-inventory.txt).
 
-## Route tables (the part that actually makes it work)
+## Route tables
 
 | Table | Attached to | Routes |
 |---|---|---|
-| `ewb-rt-a-public` | `ewb-a-public` | local 10.10.0.0/16 · 0.0.0.0/0 → `ewb-igw-a` · **10.20.0.0/16 → pcx** |
-| `ewb-rt-a-private` | `ewb-a-private` | local 10.10.0.0/16 · **10.20.0.0/16 → pcx** |
-| `ewb-rt-b-private` | `ewb-b-private` | local 10.20.0.0/16 · **10.10.0.0/16 → pcx** (return path) |
+| `ewb-rt-a-public` | `ewb-a-public` | local 10.10.0.0/16; 0.0.0.0/0 → `ewb-igw-a`; **10.20.0.0/16 → pcx** |
+| `ewb-rt-a-private` | `ewb-a-private` | local 10.10.0.0/16; **10.20.0.0/16 → pcx** |
+| `ewb-rt-b-private` | `ewb-b-private` | local 10.20.0.0/16; **10.10.0.0/16 → pcx** (return path) |
 
-The public subnet needs a peering route too, because ProxyJump means the **bastion** opens the
+The public subnet needs a peering route too, because ProxyJump means the bastion opens the
 connection to App-B. The `/16` peering route is more specific than `0.0.0.0/0`, so that traffic goes
 to the peering connection instead of the internet.
 
@@ -73,13 +76,13 @@ to the peering connection instead of the internet.
 | Group | Inbound | Why that source |
 |---|---|---|
 | `ewb-sg-bastion` | TCP 22 from `<my public IPv4>/32` | only my laptop reaches the one public host |
-| `ewb-sg-app-a` | TCP 22 from 10.10.1.10/32 · ICMP Echo (type 8, code 0) from 10.20.1.10/32 | bastion admin, App-B ping |
-| `ewb-sg-app-b` | TCP 22 from 10.10.1.10/32 · ICMP Echo (type 8, code 0) from 10.10.2.10/32 | the bastion's **private** IP is the source through ProxyJump |
+| `ewb-sg-app-a` | TCP 22 from 10.10.1.10/32; ICMP Echo (type 8, code 0) from 10.20.1.10/32 | bastion admin, App-B ping |
+| `ewb-sg-app-b` | TCP 22 from 10.10.1.10/32; ICMP Echo (type 8, code 0) from 10.10.2.10/32 | the bastion's private IP is the source through ProxyJump |
 
-Nothing is open to `0.0.0.0/0`. Outbound stays allow-all and NACLs stay default, so this lab isolates
-routing and security groups as the variables.
+Nothing is open to `0.0.0.0/0`. Outbound stays allow-all and the NACLs stay default, which leaves
+routing and security groups as the two things under test.
 
-## Test results (real output, not the workbook's expectations)
+## Test results
 
 | # | Test | Where | Result | Evidence |
 |---|---|---|---|---|
@@ -90,39 +93,38 @@ routing and security groups as the variables.
 | 05 | Isolation | EC2 instance details | **App-A and App-B both `public=(none)`** | [`08-private-only-check.txt`](evidence/08-private-only-check.txt) |
 | 06 | Controlled failure | delete one ICMP rule, then restore | **100% loss → 4 replies again** | [`09`](evidence/09-controlled-failure-ping.txt), [`10`](evidence/10-recovered-ping.txt) |
 
-Which build each transcript came from: tests 01 and 06 ran on the first build (14:38–14:48 IST), tests
-02–05 ran again on the second build (17:45–17:48 IST). Both builds used the same CIDRs and the same
-private IPs, and those transcripts carry no resource IDs, so they are directly comparable; the IDs that
-do differ are listed per build in [`evidence/00-inventory.txt`](evidence/00-inventory.txt).
+Which build each transcript came from: tests 01 and 06 ran on the first build (14:38-14:48 IST), tests
+02-05 ran again on the second build (17:45-17:48 IST). Both builds used the same CIDRs and the same
+private IPs, and these transcripts carry no resource IDs, which makes them directly comparable. The IDs
+that differ are listed per build in [`evidence/00-inventory.txt`](evidence/00-inventory.txt).
 
 Forward path: App-A sends to 10.20.1.10 → its subnet table matches 10.20.0.0/16 → peering connection →
 App-B's ENI. Return path: App-B replies to 10.10.2.10 → `ewb-rt-b-private` matches 10.10.0.0/16 → back
 over the same pcx. Remove either direction and ping dies while the pcx still reads *Active*.
 
-The controlled failure was the useful one: I revoked only `ewb-sg-app-b`'s inbound Echo request from
-10.10.2.10/32, kept the SSH rule, and ping went straight to 100% loss. Restoring the identical rule
-brought back 4 replies. Routing was never the problem in that step — the security group was.
+For the controlled failure I revoked only `ewb-sg-app-b`'s inbound Echo request from 10.10.2.10/32 and
+kept the SSH rule. Ping went straight to 100% loss, and putting the identical rule back brought 4
+replies again. Routing did not change at any point in that step.
 
-## The bug that taught me most
+## Bug 1: ICMP type 8, code 8
 
-Peering and routes were correct, SSH to App-B worked, yet every ping failed both ways. `tcpdump` on
-App-A showed the echo requests leaving; `tcpdump` on App-B showed **zero packets arriving**. The AWS
-CLI shortcut `--protocol icmp --port 8` wrote the rule as **type 8, code 8**, and an echo request is
-code 0 — so the hypervisor dropped the packets before the guest ever saw them. The fix was explicit
-`--ip-permissions "IpProtocol=icmp,FromPort=8,ToPort=0,..."`. A console click on *Custom ICMP - IPv4 /
-Echo request* would have given me type 8 code 0 from the start. Two lessons: a peering route being
-present is not the same as traffic being permitted, and one packet capture on each side tells you
-which side is lying.
+Peering was Active, the routes were right and SSH to App-B worked, yet every ping failed both ways.
+`tcpdump` on App-A showed the echo requests leaving. `tcpdump` on App-B showed no packets arriving at
+all. The AWS CLI shortcut `--protocol icmp --port 8` had written the rule as type 8, code 8, and an
+echo request is code 0, so the hypervisor dropped the packets before the guest ever saw them. The fix
+was an explicit `--ip-permissions "IpProtocol=icmp,FromPort=8,ToPort=0,..."`. Picking *Custom
+ICMP - IPv4 / Echo request* in the console gives type 8 code 0 and gets it right first time. The part I
+remember from this is that an Active peering connection says nothing about whether traffic is permitted.
 
-## The bug that only appeared on the rebuild
+## Bug 2: stale SSH host keys on the rebuild
 
-I built the lab a second time to take the console screenshots, and two tests died before peering was
-even involved. The new instances came back with the same private IPs but fresh SSH host keys, so
-`StrictHostKeyChecking` refused the connection and the phase exited 255. The raw error is kept in
-[`evidence/12-rebuild-hostkey-abort.txt`](evidence/12-rebuild-hostkey-abort.txt). `forget_host_keys()`
-now clears the lab's IPs from `secrets/known_hosts` before the SSH phases, and `run_local()` aborts on
-that error instead of quietly filing it as a test result. Reusing addresses is fine for a VPC design
-and dangerous for SSH trust: a rebuild is a new host, and it should be treated like one.
+I built the lab a second time to take the console screenshots, and two tests died before peering came
+into it. The new instances had the same private IPs but fresh SSH host keys, so `StrictHostKeyChecking`
+refused the connection and the phase exited 255. The raw error is in
+[`evidence/12-rebuild-hostkey-abort.txt`](evidence/12-rebuild-hostkey-abort.txt).
+`forget_host_keys()` now clears the lab's IPs from `secrets/known_hosts` before the SSH phases, and
+`run_local()` stops the phase when it sees that error instead of filing it as a test result. I should
+have expected it: same address, different machine, different key.
 
 ## How to run it yourself
 
@@ -135,17 +137,17 @@ aws --version                    # needs AWS CLI v2 + credentials, ssh, curl, py
 ```
 
 Each phase is a separate command so you can capture the checkpoint screenshots the workbook asks for.
-`state.env` remembers the real IDs; every phase is safe to re-run — it finds a resource by its `Name`
-tag before creating a duplicate. `AZ`, `REGION`, `INSTANCE_TYPE` and `MY_IP` are all overridable
+`state.env` remembers the real IDs, and every phase is safe to re-run because it finds a resource by its
+`Name` tag before creating a duplicate. `AZ`, `REGION`, `INSTANCE_TYPE` and `MY_IP` are all overridable
 environment variables (for example `MY_IP=203.0.113.9 ./build-lab.sh network`).
 
 Costs: 3 × `t3.micro` + one public IPv4 + 8 GB `gp3` root volumes, all delete-on-termination, in one
 AZ. Nothing else in the account was touched, and the lab needs no NAT gateway. On-demand that is about
-$0.08 per hour (₹7), so keep it running only while you test. **Teardown when you are done.**
+$0.08 per hour (₹7), so keep it running only while you test. Tear it down when you are done.
 
-Admin access without moving keys: `./build-lab.sh sshconfig` writes `ssh_config.snippet` and puts the
-key at `~/.ssh/ewb-lab.pem` (mode 400). The private key never goes onto an instance and is not in this
-repo — `secrets/` is git-ignored.
+If you want admin access without moving the key around: `./build-lab.sh sshconfig` writes
+`ssh_config.snippet` and puts the key at `~/.ssh/ewb-lab.pem` (mode 400). The private key never goes
+onto an instance and it is not in this repo. `secrets/` is git-ignored.
 
 ## Viva answers
 
@@ -155,15 +157,15 @@ repo — `secrets/` is git-ignored.
 2. **Why is App-B's SSH source the bastion's private IP?** The packet's source is whatever the
    bastion sends it as, which is its primary private IP 10.10.1.10. My laptop's public IP is
    terminated at the bastion; it never crosses the peering connection.
-3. **Why doesn't *Active* peering guarantee a ping?** The pcx is only the link. Whether traffic may
-   use it is decided by route tables on both sides, security groups (both directions and the right
-   ICMP code), NACLs, and whether the hosts are running.
+3. **Why doesn't *Active* peering guarantee a ping?** Active only means the VPCs are connected. Whether
+   traffic gets through is decided by the route tables on both sides, the security groups (both
+   directions, and the right ICMP code), the NACLs, and whether the hosts are up.
 4. **Can VPC B use VPC A's internet gateway over peering?** No. Transitive routing to an IGW is not
-   supported — an IGW serves the VPC it is attached to, and VPC B has no default route to anything
-   that reaches the internet. That is why the instances in VPC B cannot `dnf update`, and why that
-   failure is not a peering bug.
+   supported. An IGW serves the VPC it is attached to, and VPC B has no default route to anything that
+   reaches the internet. That is why the instances in VPC B cannot `dnf update`, and why that failure
+   has nothing to do with peering.
 
-Peering is also one-to-one and non-transitive: A–B plus A–C never gives B–C.
+Peering is also one-to-one and non-transitive: A-B plus A-C never gives B-C.
 
 ## Files
 
@@ -171,7 +173,7 @@ Peering is also one-to-one and non-transitive: A–B plus A–C never gives B–
 |---|---|
 | `build-lab.sh` | the whole lab: build, test, break, clean up |
 | `evidence/` | raw terminal output, route/SG dumps, and host-key/teardown traces |
-| `screenshots/` | 11 AWS Console PNG screenshots covering Checkpoints 01–04 |
+| `screenshots/` | 11 AWS Console PNG screenshots covering Checkpoints 01-04 |
 | `RajBaibhav_EWB_VPC_Peering.pdf` | final 18-page submission report with all embedded screenshots |
 | `ssh_config.snippet` | the ProxyJump config, generated with real values |
 | `state.env` | local only (git-ignored): resource IDs for teardown |

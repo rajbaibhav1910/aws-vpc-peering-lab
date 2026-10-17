@@ -5,7 +5,7 @@ Name: Raj Baibhav · Batch: ____________ · Region: ap-south-1 · Completed: 17 
 The submission file is **`RajBaibhav_EWB_VPC_Peering.pdf`** (18 pages), built straight
 from `evidence/` and `screenshots/`. Its sections follow the workbook checklist in order: §1 checklist,
 §2 diagram + inventory, §3 route tables, §4 peering + security groups, §5 console screenshots,
-§6 tests 01–05, §7 controlled failure and recovery, §8 forward/return path, §9 cleanup, §10 what I
+§6 tests 01-05, §7 controlled failure and recovery, §8 forward/return path, §9 cleanup, §10 what I
 learned, §11 the two bugs, §12 viva answers, §13 how to reproduce.
 
 | Workbook checklist item | Where it is | Marks | Done |
@@ -16,9 +16,9 @@ learned, §11 the two bugs, §12 viva answers, §13 how to reproduce.
 | Active peering connection + inbound rules per security group | PDF §4 + §5, `evidence/08-private-only-check.txt` | 20 | ✅ |
 | Baseline failure, forward and reverse ping success, App-B SSH proof | PDF §6, `evidence/03`, `05`, `06`, `07` | 15 | ✅ |
 | Controlled ICMP failure and recovery with explanation | PDF §7 + §11, `evidence/09`, `evidence/10` | 15 | ✅ |
-| Cleanup evidence + what I learned | PDF §9–10, `evidence/11`, `evidence/13` | 10 | ✅ |
+| Cleanup evidence + what I learned | PDF §9-10, `evidence/11`, `evidence/13` | 10 | ✅ |
 
-Console screenshots for Checkpoints 01–04 were captured from the AWS Management Console during
+Console screenshots for Checkpoints 01-04 were captured from the AWS Management Console during
 the second build (saved in `screenshots/` and embedded in `RajBaibhav_EWB_VPC_Peering.pdf`), backed
 by the CLI output dumps in `evidence/`:
 
