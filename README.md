@@ -172,8 +172,7 @@ Peering is also one-to-one and non-transitive: A–B plus A–C never gives B–
 | `build-lab.sh` | the whole lab: build, test, break, clean up |
 | `evidence/` | raw terminal output, route/SG dumps, and host-key/teardown traces |
 | `screenshots/` | 11 AWS Console PNG screenshots covering Checkpoints 01–04 |
-| `make_pdf.py` | report generator that embeds evidence and console screenshots |
-| [`RajBaibhav_EWB_VPC_Peering.pdf`](RajBaibhav_EWB_VPC_Peering.pdf) | final 18-page submission report with all embedded screenshots |
+| `RajBaibhav_EWB_VPC_Peering.pdf` | final 18-page submission report with all embedded screenshots |
 | `ssh_config.snippet` | the ProxyJump config, generated with real values |
 | `state.env` | local only (git-ignored): resource IDs for teardown |
 | `secrets/` | local only (git-ignored): private key, never committed |

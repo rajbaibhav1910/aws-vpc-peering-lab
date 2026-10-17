@@ -2,7 +2,7 @@
 
 Name: Raj Baibhav · Batch: ____________ · Region: ap-south-1 · Completed: 17 October 2026
 
-The submission file is **`RajBaibhav_EWB_VPC_Peering.pdf`** (18 pages), built by `make_pdf.py` straight
+The submission file is **`RajBaibhav_EWB_VPC_Peering.pdf`** (18 pages), built straight
 from `evidence/` and `screenshots/`. Its sections follow the workbook checklist in order: §1 checklist,
 §2 diagram + inventory, §3 route tables, §4 peering + security groups, §5 console screenshots,
 §6 tests 01–05, §7 controlled failure and recovery, §8 forward/return path, §9 cleanup, §10 what I
