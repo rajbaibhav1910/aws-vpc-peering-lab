@@ -1,0 +1,32 @@
+# EWB VPC Peering - cleanup evidence
+# run at  : 2026-10-17T10:13:26Z
+# command : ./build-lab.sh teardown   (deletes only IDs recorded in state.env)
+
+## lab VPCs, subnets, route tables, security groups, internet gateways, EBS volumes
+## every one of these must be empty; the tag filter is Project=EWB-VPC-Peering
+vpcs                 (empty = gone)
+subnets              (empty = gone)
+route-tables         (empty = gone)
+security-groups      (empty = gone)
+internet-gateways    (empty = gone)
+ebs-volumes          (empty = gone)
+
+## peering connection - final state
+{
+    "code": "deleted",
+    "message": "Deleted by 597595166970"
+}
+   (AWS keeps a deleted pcx queryable for a short while; code=deleted is the end state)
+
+## instances - all three reach terminated; AWS lists terminated instances for about an hour
+i-03d1512b1a3659ff1	terminated
+i-0f6a52081a6f8113b	terminated
+i-05aa30d91ddf22920	terminated
+
+## bastion public IPv4 13.206.123.132 was auto-assigned, not an Elastic IP, and released with the instance
+
+## scope proof: the pre-existing production stack was not touched
+vpc-065f1b55a9c404785	10.0.0.0/16
+
+## left in place on purpose: EC2 key pair ewb-lab (no charge). Remove with:
+##   aws ec2 delete-key-pair --region ap-south-1 --key-name ewb-lab

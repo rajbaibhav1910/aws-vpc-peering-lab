@@ -1,7 +1,7 @@
 # AWS VPC Peering — private traffic between two VPCs
 
 **Student:** Baibhav Raj · **Course:** EWB Cloud Labs, AWS Architect Associate · **Project 01**
-**Region:** ap-south-1 (Mumbai) · **Built:** 17 October 2026 · **Status:** all six tests passed
+**Region:** ap-south-1 (Mumbai) · **Built:** 17 October 2026 · **Status:** all six tests passed, torn down the same day
 
 Two VPCs that know nothing about each other, then one peering connection that makes them talk over
 private IPs only. I built the whole thing from the AWS CLI, ran every test the workbook asks for,
