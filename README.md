@@ -1,6 +1,6 @@
 # AWS VPC Peering — private traffic between two VPCs
 
-**Student:** Baibhav Raj · **Course:** EWB Cloud Labs, AWS Architect Associate · **Project 01**
+**Student:** Raj Baibhav · **Course:** EWB Cloud Labs, AWS Architect Associate · **Project 01**
 **Region:** ap-south-1 (Mumbai) · **Built:** 17 October 2026 · **Status:** all six tests passed, torn down the same day
 
 Two VPCs that know nothing about each other, then one peering connection that makes them talk over
@@ -173,7 +173,7 @@ Peering is also one-to-one and non-transitive: A–B plus A–C never gives B–
 | `evidence/` | raw terminal output, route/SG dumps, and host-key/teardown traces |
 | `screenshots/` | 11 AWS Console PNG screenshots covering Checkpoints 01–04 |
 | `make_pdf.py` | report generator that embeds evidence and console screenshots |
-| [`BaibhavRaj_EWB_VPC_Peering.pdf`](BaibhavRaj_EWB_VPC_Peering.pdf) | final 16-page submission report with all embedded screenshots |
+| [`RajBaibhav_EWB_VPC_Peering.pdf`](RajBaibhav_EWB_VPC_Peering.pdf) | final 18-page submission report with all embedded screenshots |
 | `ssh_config.snippet` | the ProxyJump config, generated with real values |
 | `state.env` | local only (git-ignored): resource IDs for teardown |
 | `secrets/` | local only (git-ignored): private key, never committed |

@@ -24,7 +24,7 @@ export MSYS2_ARG_CONV_EXCL='*'
 REGION="${REGION:-ap-south-1}"
 AZ="${AZ:-ap-south-1a}"
 INSTANCE_TYPE="${INSTANCE_TYPE:-t3.micro}"
-STUDENT="${STUDENT:-Baibhav Raj}"
+STUDENT="${STUDENT:-Raj Baibhav}"
 SSH_USER="ec2-user"
 KEY_NAME="ewb-lab"
 

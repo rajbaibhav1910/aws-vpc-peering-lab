@@ -1,5 +1,5 @@
 # EWB VPC Peering - resource inventory
-# student : Baibhav Raj   batch: ____________
+# student : Raj Baibhav   batch: ____________
 # region  : ap-south-1 (Mumbai)   account: 597595166970
 # built   : 2026-10-17, twice - same addressing both times
 
@@ -45,4 +45,4 @@ ewb-sg-app-b       sg-07ba1d7b79b22d488     tcp22+icmp (first attempt: type 8/co
 
 # AMI both builds: ami-0c25f859a8b518798 (al2023-ami-2023.12.20261016.0-kernel-6.1-x86_64), type t3.micro
 # key pair: ewb-lab (imported public key; private key never left the laptop)
-# every resource carries Project=EWB-VPC-Peering, Lab=VPC-Peering, Student=Baibhav Raj
+# every resource carries Project=EWB-VPC-Peering, Lab=VPC-Peering, Student=Raj Baibhav
