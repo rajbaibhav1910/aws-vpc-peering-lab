@@ -4,9 +4,6 @@
 # from      : RAJBAIBHAV
 # command   : ssh 13.206.123.132  hostname; hostname -I; uptime
 
-** WARNING: connection is not using a post-quantum key exchange algorithm.
-** This session may be vulnerable to "store now, decrypt later" attacks.
-** The server may need to be upgraded. See https://openssh.com/pq.html
 ip-10-10-1-10.ap-south-1.compute.internal
 10.10.1.10 
  09:08:30 up 3 min,  0 users,  load average: 0.02, 0.05, 0.02

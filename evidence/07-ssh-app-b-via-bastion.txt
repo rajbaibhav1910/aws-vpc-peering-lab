@@ -4,12 +4,6 @@
 # from      : RAJBAIBHAV
 # command   : ssh 10.20.1.10  hostname; hostname -I; whoami
 
-** WARNING: connection is not using a post-quantum key exchange algorithm.
-** This session may be vulnerable to "store now, decrypt later" attacks.
-** The server may need to be upgraded. See https://openssh.com/pq.html
-** WARNING: connection is not using a post-quantum key exchange algorithm.
-** This session may be vulnerable to "store now, decrypt later" attacks.
-** The server may need to be upgraded. See https://openssh.com/pq.html
 ip-10-20-1-10.ap-south-1.compute.internal
 10.20.1.10 
 ec2-user

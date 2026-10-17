@@ -4,12 +4,6 @@
 # from      : RAJBAIBHAV
 # command   : ssh 10.20.1.10  ping -c 4 10.10.2.10
 
-** WARNING: connection is not using a post-quantum key exchange algorithm.
-** This session may be vulnerable to "store now, decrypt later" attacks.
-** The server may need to be upgraded. See https://openssh.com/pq.html
-** WARNING: connection is not using a post-quantum key exchange algorithm.
-** This session may be vulnerable to "store now, decrypt later" attacks.
-** The server may need to be upgraded. See https://openssh.com/pq.html
 PING 10.10.2.10 (10.10.2.10) 56(84) bytes of data.
 64 bytes from 10.10.2.10: icmp_seq=1 ttl=127 time=0.166 ms
 64 bytes from 10.10.2.10: icmp_seq=2 ttl=127 time=0.166 ms

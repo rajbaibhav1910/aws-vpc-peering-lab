@@ -343,10 +343,14 @@ run_local() { # run_local LABEL HOST_IP jump? CMD...
   local -a cmd=(ssh "${SSH_BASE[@]}")
   if [ "$jump" = "jump" ]; then cmd+=(-o "ProxyCommand=$(proxy_for_bastion)"); fi
   cmd+=("$SSH_USER@$host" "$@")
-  local rc=0
-  "${cmd[@]}" >> "$outf" 2>&1 || rc=$?
-  echo
-  echo "[ssh exit code: $rc]" >> "$outf"
+  local rc=0 tmp="$outf.raw"
+  "${cmd[@]}" > "$tmp" 2>&1 || rc=$?
+  # OpenSSH 9.x/10.x prints a post-quantum notice on every connection; it is noise
+  # in lab evidence, so filter it out but keep anything else stderr produced.
+  grep -v -E '^(\*\* (WARNING: connection is not using a post-quantum|This session may be vulnerable|The server may need to be upgraded)|Warning: Permanently added)' \
+    "$tmp" >> "$outf" || true
+  rm -f "$tmp"
+  printf '\n[ssh exit code: %s]\n' "$rc" >> "$outf"
   cat "$outf"
   echo "--> saved to evidence/$label.txt"
 }

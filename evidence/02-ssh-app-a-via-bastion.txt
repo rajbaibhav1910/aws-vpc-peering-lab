@@ -4,13 +4,6 @@
 # from      : RAJBAIBHAV
 # command   : ssh 10.10.2.10  hostname; hostname -I
 
-** WARNING: connection is not using a post-quantum key exchange algorithm.
-** This session may be vulnerable to "store now, decrypt later" attacks.
-** The server may need to be upgraded. See https://openssh.com/pq.html
-Warning: Permanently added '10.10.2.10' (ED25519) to the list of known hosts.
-** WARNING: connection is not using a post-quantum key exchange algorithm.
-** This session may be vulnerable to "store now, decrypt later" attacks.
-** The server may need to be upgraded. See https://openssh.com/pq.html
 ip-10-10-2-10.ap-south-1.compute.internal
 10.10.2.10 
 [ssh exit code: 0]
